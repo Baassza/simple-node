@@ -1,29 +1,33 @@
 const express = require('express')
-const mysql = require('mysql');
+const mysql = require('mysql')
 const app = express()
 const port = 3000
+const cors = require('cors')
 
 app.use(express.json())
+app.use(cors())
 
 const con = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "rootroot",
-    database: "myform"
+    user: "xxx",
+    password: "xxx",
+    database: "xxxx"
 });
 
 con.connect(function (err) {
-    if (err) throw err;
+    if (err) {
+        throw err
+    }
     console.log("Connected!");
 });
 
 app.get('/search', (req, res) => {
-    let fils = [`name`, `sername`, `gender`, `birthday`, `edu`, `home`];
     let keyword = req.query.keyword
-    let sql = 'SELECT * FROM forms WHERE '
-    for (let i = 0; i < fils.length; i++) {
-        sql += `${fils[i]} LIKE '%${keyword}%'`
-        if (i < fils.length - 1) {
+    let cols = [`ID`, `name`, `sername`, `gender`, `birthday`, `fb`, `tel`, `edu`, `home`, `img`]
+    let sql = "SELECT * FROM forms WHERE "
+    for (let i = 0; i < cols.length; i++) {
+        sql += `${cols[i]} LIKE '%${keyword}%'`
+        if (i < cols.length - 1) {
             sql += ' OR '
         }
     }
@@ -55,13 +59,13 @@ app.get('/User/:id', (req, res) => {
     let id = req.params.id;
     if (isNaN(id)) {
         res.status(400).end()
-    } else {
+    } 
+    else {
         let sql = "SELECT * FROM forms WHERE id = ?"
-        let values = [id]
-        con.query(sql, values, function (err, result) {
+        con.query(sql, [id], function (err, result) {
             if (err) {
                 res.status(500).send(err)
-            } else if (values.length <= 0) {
+            } else if (result.length <= 0) {
                 res.status(404).end()
             } else {
                 res.send(result)
@@ -71,7 +75,7 @@ app.get('/User/:id', (req, res) => {
 })
 
 app.post('/AddUser', (req, res) => {
-    let fils = [`name`, `sername`, `gender`, `birthday`, `edu`, `home`, 'img'];
+    let fils = [`ID`, `name`, `sername`, `gender`, `birthday`, `fb`, `tel`, `edu`, `home`, `img`];
     let sqlfil = `(${fils.join(',')})`
     let values = []
     for (let i = 0; i < fils.length; i++) {
@@ -89,13 +93,13 @@ app.post('/AddUser', (req, res) => {
 })
 
 app.patch('/EditUser', (req, res) => {
-    let fils = [`name`, `sername`, `gender`, `birthday`, `edu`, `home`, 'img'];
+    let fils = [`id`, `name`, `sername`, `gender`, `birthday`, `fb`, `tel`, `edu`, `home`, `img`];
     let values = []
     for (let i = 0; i < fils.length; i++) {
         values.push(req.body[fils[i]])
     }
     values.push(req.body.id)
-    let sql = `UPDATE forms SET ${fils.join('=?,')}=? WHERE id=?`
+    let sql = `UPDATE forms SET ${fils.join('=?,')}=? WHERE id=`+values[values.length-1]
     con.query(sql, values, function (err, result) {
         if (err) {
             res.status(500).send(err)
@@ -109,10 +113,10 @@ app.delete('/User/:id', (req, res) => {
     let id = req.params.id;
     if (isNaN(id)) {
         res.status(400).end()
-    } else {
+    } 
+    else {
         let sql = "DELETE FROM forms WHERE id=?"
-        let values = [id]
-        con.query(sql, values, function (err, result) {
+        con.query(sql, [id], function (err, result) {
             if (err) {
                 res.status(500).send(err)
             } else {
